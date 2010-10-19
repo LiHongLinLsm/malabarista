@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="malabarista" default="all">
+  <import file="one-jar-ant-task.xml" />
+  <property file="build.properties" />
+  <!-- Compiler options -->
+
+  <property name="compiler.debug" value="on" />
+  <property name="compiler.generate.no.warnings" value="off" />
+  <property name="compiler.args" value="" />
+  <property name="compiler.max.memory" value="128m" />
+  <patternset id="ignored.files">
+    <exclude name="**/CVS/**" />
+    <exclude name="**/SCCS/**" />
+    <exclude name="**/RCS/**" />
+    <exclude name="**/rcs/**" />
+    <exclude name="**/.DS_Store/**" />
+    <exclude name="**/.svn/**" />
+    <exclude name="**/.pyc/**" />
+    <exclude name="**/.pyo/**" />
+    <exclude name="**/*.pyc/**" />
+    <exclude name="**/*.pyo/**" />
+    <exclude name="**/.git/**" />
+    <exclude name="**/*.hprof/**" />
+    <exclude name="**/_svn/**" />
+    <exclude name="**/.hg/**" />
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.zip" />
+    <include name="*.war" />
+    <include name="*.egg" />
+    <include name="*.ear" />
+    <include name="*.swc" />
+    <include name="*.jar" />
+  </patternset>
+  <patternset id="compiler.resources">
+    <include name="**/?*.properties" />
+    <include name="**/?*.xml" />
+    <include name="**/?*.gif" />
+    <include name="**/?*.png" />
+    <include name="**/?*.jpeg" />
+    <include name="**/?*.jpg" />
+    <include name="**/?*.html" />
+    <include name="**/?*.dtd" />
+    <include name="**/?*.tld" />
+    <include name="**/?*.ftl" />
+    <include name="**/?*.txt" />
+  </patternset>
+
+
+  <!-- Project Libraries -->
+  <path id="library.lib.classpath">
+    <pathelement location="${basedir}/../../lib/log4j-1.2.15.jar" />
+    <pathelement location="${basedir}/../../lib/netty-3.2.2.Final.jar" />
+    <pathelement location="${basedir}/../../lib/slf4j-api-1.6.1.jar" />
+    <pathelement location="${basedir}/../../lib/slf4j-log4j12-1.6.1.jar" />
+  </path>
+
+
+  <dirname property="module.malabarista.basedir" file="${ant.file}" />
+
+  <property name="compiler.args.malabarista" value="${compiler.args}" />
+  <property name="malabarista.output.dir"
+            value="${basedir}/../../target/production/malabarista" />
+  <property name="malabarista.testoutput.dir"
+            value="${basedir}/../../target/test/malabarista" />
+
+  <path id="malabarista.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+
+  <path id="malabarista.module.production.classpath">
+    <path refid="library.lib.classpath" />
+  </path>
+
+  <path id="malabarista.runtime.production.module.classpath">
+    <pathelement location="${malabarista.output.dir}" />
+    <path refid="library.lib.classpath" />
+  </path>
+
+  <path id="malabarista.module.classpath">
+    <pathelement location="${malabarista.output.dir}" />
+    <path refid="library.lib.classpath" />
+  </path>
+
+  <path id="malabarista.runtime.module.classpath">
+    <pathelement location="${malabarista.output.dir}" />
+    <pathelement location="${malabarista.testoutput.dir}" />
+    <path refid="library.lib.classpath" />
+  </path>
+
+
+  <patternset id="excluded.from.module.malabarista">
+    <patternset refid="ignored.files" />
+  </patternset>
+
+  <patternset id="excluded.from.compilation.malabarista">
+    <patternset refid="excluded.from.module.malabarista" />
+  </patternset>
+
+  <path id="malabarista.module.sourcepath">
+    <dirset dir="${basedir}/../main/">
+      <include name="java" />
+      <include name="resources" />
+    </dirset>
+  </path>
+
+
+  <target name="compile.module.malabarista"
+          depends="compile.module.malabarista.production,compile.module.malabarista.tests"
+          description="Compile module malabarista" />
+
+  <target name="compile.module.malabarista.production"
+          description="Compile module malabarista; production classes">
+    <mkdir dir="${malabarista.output.dir}" />
+    <javac destdir="${malabarista.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}"
+           memorymaximumsize="${compiler.max.memory}" fork="true">
+      <compilerarg line="${compiler.args.malabarista}" />
+      <bootclasspath refid="malabarista.module.bootclasspath" />
+      <classpath refid="malabarista.module.production.classpath" />
+      <src refid="malabarista.module.sourcepath" />
+      <patternset refid="excluded.from.compilation.malabarista" />
+    </javac>
+
+    <copy todir="${malabarista.output.dir}">
+      <fileset dir="${basedir}/../main/java">
+        <patternset refid="compiler.resources" />
+        <type type="file" />
+      </fileset>
+      <fileset dir="${basedir}/../main/resources">
+        <patternset refid="compiler.resources" />
+        <type type="file" />
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="compile.module.malabarista.tests" depends="compile.module.malabarista.production"
+          description="compile module malabarista; test classes" unless="skip.tests" />
+
+  <target name="clean.module.malabarista" description="cleanup module">
+    <delete dir="${malabarista.output.dir}" />
+    <delete dir="${malabarista.testoutput.dir}" />
+  </target>
+
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+
+  <target name="clean" depends="clean.module.malabarista" description="cleanup all" />
+
+  <target name="build.modules" depends="init, clean, compile.module.malabarista"
+          description="build all modules" />
+
+  <target name="all" depends="build.modules" description="build all" />
+
+  <tstamp>
+    <format property="TODAY_DEPLOY" pattern="yyyyMMdd" />
+  </tstamp>
+
+  <target name="jar.loadbalancer" description="Create executable jar."
+          depends="compile.module.malabarista.production">
+    <mkdir dir="${basedir}/../../target/" />
+    <one-jar destfile="${basedir}/../../target/${jar.filename}-latest-${TODAY_DEPLOY}.jar"
+             manifest="Malabarista.mf">
+      <main>
+        <fileset dir="${malabarista.output.dir}" />
+      </main>
+      <lib>
+        <fileset dir="${basedir}/../../lib">
+          <patternset refid="library.patterns" />
+        </fileset>
+      </lib>
+    </one-jar>
+    <copy file="${basedir}/../../target/${jar.filename}-latest-${TODAY_DEPLOY}.jar"
+          tofile="${basedir}/../../target/${jar.filename}.jar" />
+  </target>
+</project>

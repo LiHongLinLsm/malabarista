@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="onejartask">
+  <taskdef name="one-jar" classname="com.simontuffs.onejar.ant.OneJarTask"
+           classpath="one-jar-ant-task-0.96.jar" onerror="report"/>
+</project>
